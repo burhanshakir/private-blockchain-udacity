@@ -1,7 +1,7 @@
 /**
  *          BlockchainController
- * 
- * This class expose the endpoints that the client applications will use to interact with the 
+ *
+ * This class expose the endpoints that the client applications will use to interact with the
  * Blockchain dataset
  */
 class BlockchainController {
@@ -16,6 +16,7 @@ class BlockchainController {
         this.submitStar();
         this.getBlockByHash();
         this.getStarsByOwner();
+        this.validateBlockChain();
     }
 
     // Enpoint to Get a Block by Height (GET Endpoint)
@@ -32,7 +33,22 @@ class BlockchainController {
             } else {
                 return res.status(404).send("Block Not Found! Review the Parameters!");
             }
-            
+
+        });
+    }
+
+    // Enpoint to validate the blockchain (GET Endpoint)
+    validateBlockChain() {
+        this.app.get("/block/validate", async (req, res) => {
+
+            let errorList = await this.blockchain.validateChain();
+
+            if (errorList == 0) {
+              return res.status(200).send("Block chain validated!");
+            } else {
+              return res.status(404).send("Blockchain validation failed");
+            }
+
         });
     }
 
@@ -91,7 +107,7 @@ class BlockchainController {
             } else {
                 return res.status(404).send("Block Not Found! Review the Parameters!");
             }
-            
+
         });
     }
 
@@ -113,7 +129,7 @@ class BlockchainController {
             } else {
                 return res.status(500).send("Block Not Found! Review the Parameters!");
             }
-            
+
         });
     }
 

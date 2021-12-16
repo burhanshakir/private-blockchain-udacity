@@ -66,6 +66,7 @@ class Blockchain {
         return new Promise(async (resolve, reject) => {
 
           let chainLength = self.chain.length;
+          let height = await self.getChainHeight();
 
           if (chainLength > 0) {
             block.previousBlockHash = this.chain[chainLength - 1].hash
@@ -79,11 +80,22 @@ class Blockchain {
           self.chain.push(block);
           self.height = self.height + 1;
 
-          if (block.hash != null) {
-            resolve(block);
-          } else {
-            reject(Error("Block add failed"));
+          if (block.hash == null) {
+            reject(Error("Block add failed because hash was null"));
           }
+
+          this.validateChain().then(errorList => {
+
+            if (errorList.length > 0) {
+              reject(errorList);
+
+            } else {
+              resolve(block);
+            }
+
+          }).catch(error => {
+            reject(error);
+          });
         });
     }
 
@@ -215,30 +227,30 @@ class Blockchain {
         let errors = [];
 
         return new Promise(async (resolve, reject) => {
+
           self.chain.forEach((block, index) => {
 
-            block.validateBlock().then(isValid => {
+            block.validate().then(isValid => {
               if(!isValid) {
                 errors.push('Error validating block');
 
               } else {
 
                 if (block.height > 0) {
-                  let previousBlockHash = chain[index-1].hash;
+                  let previousBlockHash = self.chain[index-1].hash;
 
                   if (previousBlockHash != block.previousBlockHash) {
                     errors.push('Mismatch of previous block hash');
                   }
                 }
               }
-
             });
-
           });
 
           resolve(errors);
 
         });
+
     }
 
 }
